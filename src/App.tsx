@@ -1,4 +1,5 @@
 import React, {useState} from "react"
+import {useImmer} from "use-immer";
 import {
   ChakraProvider,
   Box,
@@ -10,48 +11,55 @@ import {
   Input,
   Flex,
   Button,
+  RadioGroup,
+  Radio,
   Select,
   theme,
 } from "@chakra-ui/react"
-import {Dice, Roll} from './die';
+import {
+  Dice,
+  Roll,
+  rollDice,
+} from './die';
 
 function expandRoll({rolls}: Roll): string {
   return `${rolls.join('+')}`;
 }
 
-export const App = () => {
-  const [{
-    numberOfDice,
-    type,
-    modifier,
-  }, setState] = useState({numberOfDice: 1, type: 4, modifier: 0});
-  const [rolls, setRolls] = useState<Roll[]>([]);
-  return <ChakraProvider theme={theme}>
-    <Center>
-        <Grid p={4} gridRowGap={4}>
-    <form onSubmit={e => {
-      e.preventDefault();
-      const dice = new Dice(type, numberOfDice, modifier);
-      setRolls([dice.roll(), ...rolls]);
-    }}>
-          <Flex>
+const DiceSection = ({
+  quantity,
+  modifier,
+  sides,
+  updateDice,
+}: {
+  quantity: number,
+  modifier: number,
+  sides: number,
+  updateDice: (dice: Dice) => void
+}) => {
+  return    <>
+  <Flex>
             <FormControl id="#OfDice" flex="4">
               <FormLabel># Of Dice</FormLabel>
-              <Input value={numberOfDice} onChange={({target: {value}}) => setState({
-                numberOfDice: parseInt(value),
-                modifier,
-                type,
-              })}
-/>
+              <Input value={quantity} onChange={({target: {value}}) => 
+                updateDice({
+                  modifier,
+                  sides,
+                  quantity: parseInt(value) || 0,
+                })}
+              />
             </FormControl>
             <Box flex="1" />
             <FormControl id="type" flex="4">
               <FormLabel>Type</FormLabel>
-              <Select value={type} onChange={({target: {value}}) => setState({
-                numberOfDice,
-                modifier,
-                type: parseInt(value),
-              })} >
+              <Select value={sides} onChange={({target: {value}}) => 
+                updateDice({
+                  modifier,
+                  sides: parseInt(value) || 0,
+                  quantity,
+                })}
+              >
+
                 <option value="4">D4</option>
                 <option value="6">D6</option>
                 <option value="8">D8</option>
@@ -64,17 +72,51 @@ export const App = () => {
             <Box flex="1" />
             <FormControl id="modifier" flex="4">
               <FormLabel>Modifier</FormLabel>
-              <Input number={modifier} onChange={({target: {value}}) => setState({
-                numberOfDice,
-                modifier: parseInt(value) || 0,
-                type,
-              })}
-            />
+              <Input value={modifier} onChange={({target: {value}}) => 
+                updateDice({
+                  modifier: parseInt(value) || 0,
+                  sides,
+                  quantity,
+                })}
+              />
             </FormControl>
           </Flex>
-          <Box paddingTop={2}>
-            <Button w="100%" type="submit">Roll!</Button>
-          </Box>
+          <RadioGroup marginY={2} name="form-name">
+            <Flex>
+              <Radio flex="1"><Text fontSize="xs">Advantage</Text></Radio>
+              <Radio flex="1"><Text fontSize="xs">Disadvantage</Text></Radio>
+              <Radio flex="1"><Text fontSize="xs">Flat</Text></Radio>
+            </Flex>
+          </RadioGroup>
+          </>
+}
+
+const defaultDice = {
+    sides: 4,
+    quantity: 1,
+    modifier: 0,
+};
+
+export const App = () => {
+  const [diceSet, setDice] = useImmer<Dice[]>([defaultDice]);
+  const [rolls, setRolls] = useState<Roll[]>([]);
+  return <ChakraProvider theme={theme}>
+    <Center>
+        <Grid p={4} gridRowGap={4}>
+    <form onSubmit={e => {
+      e.preventDefault();
+      setDice([defaultDice]);
+      setRolls([rollDice(diceSet[0]), ...rolls]);
+    }}>
+      {diceSet.map((dice, i) => {
+        return <DiceSection {...dice} updateDice={(dice: Dice) => setDice(draft => {
+          draft[i] = dice;
+          return draft;
+        })} />
+      })}
+      <Box marginTop={2}>
+        <Button w="100%" type="submit">Roll!</Button>
+      </Box>
       </form>
       <Flex border="1px solid #7C7C7C" p={4} w="100%" direction="column">
         {rolls.map((roll, i) => (
