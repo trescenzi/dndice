@@ -31,6 +31,10 @@ export function rollDice(dice: Dice) : Roll {
   }
 }
 
+export function rollDiceSet(diceSet: Dice[]) : Roll[] {
+  return diceSet.map(rollDice);
+}
+
 export function diceToString({modifier, sides, quantity}: Dice): string {
   const modifierString = modifier !== 0 ? modifier > 0 ? `+${modifier}` : `${modifier}` : '';
   return `${quantity}D${sides} ${modifierString}`;

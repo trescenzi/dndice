@@ -19,7 +19,7 @@ import {
 import {
   Dice,
   Roll,
-  rollDice,
+  rollDiceSet,
 } from './die';
 
 function expandRoll({rolls}: Roll): string {
@@ -81,6 +81,7 @@ const DiceSection = ({
               />
             </FormControl>
           </Flex>
+          {/*
           <RadioGroup marginY={2} name="form-name">
             <Flex>
               <Radio flex="1"><Text fontSize="xs">Advantage</Text></Radio>
@@ -88,6 +89,7 @@ const DiceSection = ({
               <Radio flex="1"><Text fontSize="xs">Flat</Text></Radio>
             </Flex>
           </RadioGroup>
+          */}
           </>
 }
 
@@ -99,14 +101,14 @@ const defaultDice = {
 
 export const App = () => {
   const [diceSet, setDice] = useImmer<Dice[]>([defaultDice]);
-  const [rolls, setRolls] = useState<Roll[]>([]);
+  const [rolls, setRolls] = useState<Roll[][]>([]);
   return <ChakraProvider theme={theme}>
     <Center>
         <Grid p={4} gridRowGap={4}>
     <form onSubmit={e => {
       e.preventDefault();
       setDice([defaultDice]);
-      setRolls([rollDice(diceSet[0]), ...rolls]);
+      setRolls([rollDiceSet(diceSet), ...rolls]);
     }}>
       {diceSet.map((dice, i) => {
         return <DiceSection {...dice} updateDice={(dice: Dice) => setDice(draft => {
@@ -114,15 +116,20 @@ export const App = () => {
           return draft;
         })} />
       })}
-      <Box marginTop={2}>
-        <Button w="100%" type="submit">Roll!</Button>
-      </Box>
+      <Flex marginTop={2}>
+        <Button flex="3" onClick={() => setDice(draft => {draft.push(defaultDice)})}>Add More Dice</Button>
+        <Box flex="1" />
+        <Button flex="3" type="submit">Roll!</Button>
+      </Flex>
       </form>
       <Flex border="1px solid #7C7C7C" p={4} w="100%" direction="column">
-        {rolls.map((roll, i) => (
+        {rolls.map((rolls, i) => (
           <Box w="100%" key={i}>
-            <Text>{roll.string} = {roll.sum}</Text>
-            <Text fontSize="xs" mt="-1">({expandRoll(roll)})</Text>
+            <Text>
+              {rolls.map(({string}) => string).join(' + ')} =
+              {rolls.reduce((total, {sum}) => total + sum, 0)}
+            </Text>
+            <Text fontSize="xs" mt="-1">({rolls.map(expandRoll).join(' | ')})</Text>
           </Box>
         ))}
       </Flex>
