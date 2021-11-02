@@ -1,11 +1,3 @@
-class Die {
-  constructor(private sides: number) {}
-
-  roll() {
-    return Math.ceil(Math.random() * this.sides);
-  }
-}
-
 export type Roll = {
   rolls: number[];
   modifier: number;
