@@ -43,7 +43,7 @@ const DiceSection = ({
                 updateDice({
                   modifier,
                   sides,
-                  quantity: parseInt(value) || 0,
+                  quantity: parseInt(value, 10) || 0,
                 })}
               />
             </FormControl>
@@ -53,7 +53,7 @@ const DiceSection = ({
               <Select value={sides} onChange={({target: {value}}) => 
                 updateDice({
                   modifier,
-                  sides: parseInt(value) || 0,
+                  sides: parseInt(value, 10) || 0,
                   quantity,
                 })}
               >
@@ -72,7 +72,7 @@ const DiceSection = ({
               <FormLabel>Modifier</FormLabel>
               <Input value={modifier} onChange={({target: {value}}) => 
                 updateDice({
-                  modifier: parseInt(value) || 0,
+                  modifier: parseInt(value, 10) || 0,
                   sides,
                   quantity,
                 })}
