@@ -33,10 +33,9 @@ export function parseDiceString(diceString: string) {
     return tree;
   }
 
-  tree = diceString.replace(/\s/, '')
+  tree = diceString.replace(/\s/g, '')
     .split(/([\+-])/)
     .reduce((tree, curr) => {
-      curr = curr.trim();
       if (curr === '+') {
         tree.operators.push(add);
         tree.operatorsText.push('+');
