@@ -1,9 +1,29 @@
-import Die from './die';
-export const add = (x, y) => x + y;
-export const subtract = (x, y) => x - y;
+type operator = (x: number, y: number) => number;
+type tree = {
+  operators: operator[],
+  dice: (Die | number)[],
+  operatorsText: string[],
+}
+const add = (x: number, y: number) => x + y;
+const subtract = (x: number, y: number) => x - y;
 
-export function parseDiceString(diceString, randomPlus) {
-  let tree = {
+class Die {
+  private sides: number;
+  constructor(sides: number | string) {
+    if (typeof sides === 'string') {
+      this.sides = parseInt(sides, 10);
+    } else {
+      this.sides = sides;
+    }
+  }
+
+  roll() {
+    return Math.floor(Math.random() * this.sides) + 1;
+  }
+}
+
+export function parseDiceString(diceString: string) {
+  let tree: tree = {
     operators: [],
     dice: [],
     operatorsText: [],
@@ -27,15 +47,15 @@ export function parseDiceString(diceString, randomPlus) {
       } else if (curr.indexOf('d') !== 0) {
         const [numDice, sides] = curr.split('d');
         const operator = tree.operators[tree.operators.length - 1] || add;
-        for (var i = 0; i<numDice; i++) {
-          tree.dice.push(new Die(sides, randomPlus));
+        for (var i = 0; i<parseInt(numDice, 10); i++) {
+          tree.dice.push(new Die(sides));
           if (i !== 0) {
             tree.operators.push(operator);
             tree.operatorsText.push(operator.name === 'add' ? '+' : '-');
           }
         }
       } else if (curr.indexOf('d') === 0) {
-        tree.dice.push(new Die(curr.slice(1), randomPlus));
+        tree.dice.push(new Die(curr.slice(1)));
       } else {
         throw new Error(`BAD DICE STRING ${diceString} ${curr}`);
       }
@@ -51,9 +71,9 @@ export function parseDiceString(diceString, randomPlus) {
   return tree; 
 }
 
-export function rollDice({dice, operators, operatorsText}) {
+export function rollDice({dice, operators, operatorsText}: tree) {
   return dice
-    .map((d) => d.roll ? d.roll() : d)
+    .map((d) => typeof d === 'number' ? d : d.roll())
     .reduce(({sum, text}, roll, i) => {
       return {
         sum: operators[i](sum,roll),
