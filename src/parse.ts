@@ -7,8 +7,8 @@ type tree = {
 const add = (x: number, y: number) => x + y;
 const subtract = (x: number, y: number) => x - y;
 
-class Die {
-  private sides: number;
+export class Die {
+  public sides: number;
   constructor(sides: number | string) {
     if (typeof sides === 'string') {
       this.sides = parseInt(sides, 10);
@@ -36,6 +36,7 @@ export function parseDiceString(diceString: string) {
   tree = diceString.replace(/\s/, '')
     .split(/([\+-])/)
     .reduce((tree, curr) => {
+      curr = curr.trim();
       if (curr === '+') {
         tree.operators.push(add);
         tree.operatorsText.push('+');
@@ -51,7 +52,7 @@ export function parseDiceString(diceString: string) {
           tree.dice.push(new Die(sides));
           if (i !== 0) {
             tree.operators.push(operator);
-            tree.operatorsText.push(operator.name === 'add' ? '+' : '-');
+            tree.operatorsText.push(operator === add ? '+' : '-');
           }
         }
       } else if (curr.indexOf('d') === 0) {
